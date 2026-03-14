@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fil">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="DRR Alert">
+<meta name="application-name" content="DRR Alert">
+<meta name="theme-color" content="#C0001A">
+<meta name="description" content="Barangay Emergency Response System — Mag-ulat ng emergency agad">
+<link rel="manifest" href="manifest.json">
+<title>Tulong! CSJDM</title>
+
+<!-- manifest.json -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Favicons -->
+<link rel="icon" type="image/png" href="images/icon.png">
+<link rel="apple-touch-icon" sizes="512x512" href="images/icon.png">
+
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ════════ DRAWER ════════ -->
+  <div id="drawer-overlay" onclick="closeDrawer()"></div>
+  <div id="drawer">
+    <div class="drawer-head">
+      <div class="drawer-appname">DRR ALERT</div>
+      <div class="drawer-tagline">Barangay Emergency Response</div>
+      <div class="drawer-version">Prototype v1.0 · SJDM Bulacan</div>
+    </div>
+    <div class="drawer-list">
+      <div class="drawer-row" onclick="goHome(); closeDrawer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Home
+      </div>
+      <div class="drawer-row" onclick="navTo('screen-hotlines'); closeDrawer()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.11-.27c1.21.49 2.53.76 3.88.76a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C9.72 21 3 14.28 3 6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.35.27 2.67.76 3.88a1 1 0 0 1-.27 1.11l-2.37 1.8z"/></svg> Emergency Hotlines
+      </div>
+      <div class="drawer-row" onclick="stopCamera(); navTo('screen-compose'); closeDrawer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Mag-Compose ng Ulat
+      </div>
+      <div class="drawer-sep"></div>
+      <div class="drawer-row" onclick="showToast('🚧 Feature coming soon'); closeDrawer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Kasaysayan ng Ulat
+      </div>
+      <div class="drawer-row" onclick="showToast('🚧 Feature coming soon'); closeDrawer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Gabay / Paano Gamitin
+      </div>
+      <div class="drawer-row" onclick="showToast('🚧 Feature coming soon'); closeDrawer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Tungkol sa App
+      </div>
+      <div class="drawer-sep"></div>
+      <div class="drawer-row red" onclick="showToast('🚨 False report line: 0800-DRR-SJDM'); closeDrawer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="white" stroke-width="2" stroke-linecap="round"/></svg> I-Report ang False Alarm
+      </div>
+    </div>
+    <div class="drawer-foot">
+      DRR Alert · Open Source PWA<br>
+      Powered by Leaflet + Nominatim + OpenStreetMap
+    </div>
+  </div>
+
+  <!-- ════════ SCREEN 1: HOME ════════ -->
+  <div id="screen-home" class="screen active">
+
+    <div class="home-topbar">
+      <button class="icon-btn" onclick="openDrawer()" aria-label="Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <button class="icon-btn bell-wrap" onclick="showToast('Walang bagong alerto')" aria-label="Notifications">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <span class="bell-dot"></span>
+      </button>
+    </div>
+
+    <div class="seal-block">
+      <div class="seal-circle">
+        <img src="https://csjdm.gov.ph/wp-content/uploads/2024/05/cropped-San-Jose-del-Monte-Official-Seal.png"
+             alt="SJDM Seal"
+             onerror="this.style.display='none';">
+      </div>
+    </div>
+
+    <div class="sos-wrap">
+      <div class="sos-ring">
+        <button class="sos-btn" id="sos-btn" onclick="handleSOS()" aria-label="Mag-ulat ng emergency">
+          <span class="sos-tag">SOS</span>
+          <span class="sos-main">MAG-ULAT NG<br>EMERGENCY</span>
+        </button>
+      </div>
+      <div class="status-pill online" id="status-pill">
+        <div class="status-dot"></div>
+        <span id="status-label">ONLINE</span>
+      </div>
+    </div>
+
+    <div class="gps-bar" id="gps-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      GPS: <span id="gps-text">Naghahanap ng lokasyon...</span>
+      <span class="gps-acc-tag warn" id="gps-acc">---</span>
+    </div>
+
+    <div class="quick-grid">
+      <div class="qbtn" onclick="navTo('screen-hotlines')" role="button" tabindex="0">
+        <span class="qbtn-icon">📞</span>
+        <span class="qbtn-label">Hotlines</span>
+        <span class="qbtn-sub">Mga contact kung offline</span>
+      </div>
+      <div class="qbtn" onclick="showToast('🚧 Kasaysayan coming soon')" role="button" tabindex="0">
+        <span class="qbtn-icon">📋</span>
+        <span class="qbtn-label">Mga Ulat</span>
+        <span class="qbtn-sub">Listahan ng mga ulat</span>
+      </div>
+      <div class="qbtn" onclick="stopCamera(); navTo('screen-compose')" role="button" tabindex="0">
+        <span class="qbtn-icon">✏️</span>
+        <span class="qbtn-label">I-Compose</span>
+        <span class="qbtn-sub">Mag-ulat nang text</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-home -->
+
+
+  <!-- ════════ SCREEN 2: CAMERA ════════ -->
+  <div id="screen-camera" class="screen">
+    <div id="cam-vf">
+      <video id="cam-video" autoplay playsinline muted></video>
+      <canvas id="cam-canvas"></canvas>
+
+      <div id="cam-blocked">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h3a2 2 0 0 1 2 2v9.34"/><path d="M15 13a3 3 0 1 1-5.66-1.46"/></svg>
+        <p style="color:#555;font-size:0.85rem;text-align:center;line-height:1.6;max-width:240px;">
+          Hindi ma-access ang camera.<br>
+          <strong>Kung Brave browser:</strong> i-tap ang lion icon sa address bar → i-disable ang Shields para sa site na ito.<br>
+          <strong>Kung Chrome:</strong> i-tap ang lock icon → Camera → Allow.
+        </p>
+        <button class="cam-retry-btn" onclick="startCamera()" style="margin-top:4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Subukan Ulit
+        </button>
+        <button onclick="skipCameraAndProceed()" style="margin-top:8px;background:none;border:1.5px solid #ccc;border-radius:12px;padding:10px 20px;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;color:#555;cursor:pointer;width:100%;max-width:240px;">
+          Mag-upload ng larawan mula Gallery →
+        </button>
+      </div>
+
+      <div class="cam-top-bar">
+        <button class="cam-btn" onclick="stopCamera(); navBack()" aria-label="Bumalik">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="cam-btn" onclick="flipCamera()" aria-label="Flip camera">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        </button>
+        <button class="cam-btn" id="flash-btn" onclick="toggleFlash()" aria-label="Flash">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </button>
+      </div>
+
+      <div class="cam-corner tl"></div>
+      <div class="cam-corner tr"></div>
+      <div class="cam-corner bl"></div>
+      <div class="cam-corner br"></div>
+
+      <div id="scan-line"></div>
+      <div id="ai-badge">
+        <div class="ai-lbl">🤖 AI Detection</div>
+        <div class="ai-type" id="ai-type">---</div>
+        <div class="ai-conf" id="ai-conf">Nagpo-proseso...</div>
+      </div>
+    </div>
+
+    <div class="cam-controls">
+      <div class="cam-ctrl-row">
+        <div class="gallery-thumb" onclick="openGallery()" role="button" aria-label="Gallery">
+          <img id="gal-img" alt="Gallery preview">
+          <svg id="gal-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="#666"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div class="shutter" onclick="capturePhoto()" role="button" aria-label="Kumuha ng larawan">
+          <div class="shutter-inner"></div>
+        </div>
+        <div style="width:48px"></div>
+      </div>
+      <button class="compose-fallback-btn" onclick="stopCamera(); navTo('screen-compose')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> I-COMPOSE NALANG ANG ULAT
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ════════ SCREEN 3: CONFIRM ════════ -->
+  <div id="screen-confirm" class="screen">
+
+    <div class="screen-hdr">
+      <button class="back-btn" onclick="navBack()" aria-label="Bumalik">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="hdr-title">Kumpirmasyon ng Ulat</span>
+    </div>
+
+    <div id="confirm-map"></div>
+
+    <div class="photo-thumb" id="photo-thumb">
+      <img id="photo-preview" alt="Captured">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><polyline points="21 15 16 10 5 21"/></svg> Walang larawan
+    </div>
+
+    <div class="screen-scroll">
+      <div class="info-cards">
+        <div class="info-card">
+          <div class="card-ico ci-red" id="type-icon">🔥</div>
+          <div>
+            <div class="card-lbl">Uri ng Emergency (AI Vision)</div>
+            <div class="card-val" id="c-type">---</div>
+            <div class="card-sub" id="c-dept">---</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="card-ico ci-blue">📍</div>
+          <div>
+            <div class="card-lbl">Kasalukuyang Lokasyon</div>
+            <div class="card-val" id="c-address">Naglo-load ng address...</div>
+            <div class="card-sub" id="c-coords">---</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="card-ico ci-gold">🕐</div>
+          <div>
+            <div class="card-lbl">Oras ng Ulat</div>
+            <div class="card-val" id="c-time">---</div>
+            <div class="card-sub" id="c-ref">REFNUM: ---</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="validity-chips">
+        <div class="vchip ok" id="chip-gps"><div class="vdot ok"></div>GPS</div>
+        <div class="vchip ok" id="chip-dev"><div class="vdot ok"></div>Device</div>
+        <div class="vchip warn" id="chip-acc"><div class="vdot warn"></div>Accuracy</div>
+      </div>
+    </div>
+
+    <div class="confirm-actions">
+      <button class="btn-primary" onclick="startCountdown()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> IPADALA ANG ULAT
+      </button>
+      <button class="btn-secondary" onclick="navBack()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> I-KANSELA
+      </button>
+    </div>
+
+    <!-- Countdown overlay -->
+    <div id="countdown-overlay">
+      <div class="cd-ring" id="cd-num">5</div>
+      <div class="cd-lbl">Ipapadala sa loob ng...</div>
+      <button class="cd-cancel" onclick="cancelCountdown()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>&nbsp; I-KANSELA
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ════════ SCREEN 4: DONE ════════ -->
+  <div id="screen-done" class="screen">
+    <div class="done-inner">
+      <div class="done-ico">✓</div>
+      <div class="done-title">PAPUNTA NA<br>ANG TULONG</div>
+      <div class="done-desc" id="done-desc">
+        Naipadala na ang iyong ulat. Mangyaring maghintay at manatiling ligtas.
+      </div>
+      <div class="done-refbox">REF# <b id="done-ref">DRR----</b></div>
+      <div class="done-dispatch" id="done-dispatch">
+        📢 Naipadala sa: Bureau of Fire Protection<br>
+        ⏱ Response time: ~5–10 minuto
+      </div>
+      <div class="done-actions">
+      <button class="btn-primary" style="margin-bottom:10px" onclick="goHome()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> BUMALIK SA HOME
+      </button>
+      <button class="btn-secondary" onclick="shareReport()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> I-SHARE ANG ULAT
+      </button>
+    </div>
+    </div>
+    <div class="safe-bot"></div>
+  </div>
+
+
+  <!-- ════════ SCREEN 5: HOTLINES ════════ -->
+  <div id="screen-hotlines" class="screen">
+    <div class="screen-hdr">
+      <button class="back-btn" onclick="navBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <span class="hdr-title">Emergency Hotlines</span>
+      <span class="offline-tag">⚡ OFFLINE OK</span>
+    </div>
+    <div class="screen-scroll">
+      <div class="hotlines-list">
+        <div class="hl-section-lbl">🆘 Pangunahing Emergency</div>
+        <a class="hl-card" href="tel:911">
+          <div class="hl-ico" style="background:#FFEBEE">🆘</div>
+          <div class="hl-info"><div class="hl-name">Emergency Hotline</div><div class="hl-num">911 — Libre, 24/7</div></div>
+          <button class="hl-call emg"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.11-.27c1.21.49 2.53.76 3.88.76a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C9.72 21 3 14.28 3 6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.35.27 2.67.76 3.88a1 1 0 0 1-.27 1.11l-2.37 1.8z"/></svg></button>
+        </a>
+        <a class="hl-card" href="tel:117">
+          <div class="hl-ico" style="background:#E3F0FF">🚔</div>
+          <div class="hl-info"><div class="hl-name">PNP Hotline</div><div class="hl-num">117 / (044) 760-2222</div></div>
+          <button class="hl-call emg"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.11-.27c1.21.49 2.53.76 3.88.76a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C9.72 21 3 14.28 3 6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.35.27 2.67.76 3.88a1 1 0 0 1-.27 1.11l-2.37 1.8z"/></svg></button>
+        </a>
+        <a class="hl-card" href="tel:160">
+          <div class="hl-ico" style="background:#FFF3E0">🚒</div>
+          <div class="hl-info"><div class="hl-name">BFP — Bumbero</div><div class="hl-num">160 / (044) 760-3333</div></div>
+          <button class="hl-call emg"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.11-.27c1.21.49 2.53.76 3.88.76a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C9.72 21 3 14.28 3 6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.35.27 2.67.76 3.88a1 1 0 0 1-.27 1.11l-2.37 1.8z"/></svg></button>
+        </a>
+        <a class="hl-card" href="tel:143">
+          <div class="hl-ico" style="background:#E6F4EB">🏥</div>
+          <div class="hl-info"><div class="hl-name">Red Cross / Ambulance</div><div class="hl-num">143 / (044) 760-4444</div></div>
+          <button class="hl-call emg"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.11-.27c1.21.49 2.53.76 3.88.76a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C9.72 21 3 14.28 3 6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.35.27 2.67.76 3.88a1 1 0 0 1-.27 1.11l-2.37 1.8z"/></svg></button>
+        </a>
+        <div class="hl-section-lbl" style="margin-top:4px">🏛️ Lokal na Opisina — SJDM</div>
+        <a class="hl-card" href="tel:+63447605555">
+          <div class="hl-ico" style="background:#EDE7F6">🏢</div>
+          <div class="hl-info"><div class="hl-name">CDRRMO SJDM</div><div class="hl-num">(044) 760-5555</div></div>
+          <button class="hl-call nrm"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.11-.27c1.21.49 2.53.76 3.88.76a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C9.72 21 3 14.28 3 6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.35.27 2.67.76 3.88a1 1 0 0 1-.27 1.11l-2.37 1.8z"/></svg></button>
+        </a>
+        <a class="hl-card" href="tel:+63447606666">
+          <div class="hl-ico" style="background:#FFF8E1">🏘️</div>
+          <div class="hl-info"><div class="hl-name">Punong Barangay</div><div class="hl-num">(044) 760-6666</div></div>
+          <button class="hl-call nrm"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.11-.27c1.21.49 2.53.76 3.88.76a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C9.72 21 3 14.28 3 6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.35.27 2.67.76 3.88a1 1 0 0 1-.27 1.11l-2.37 1.8z"/></svg></button>
+        </a>
+        <a class="hl-card" href="tel:1555">
+          <div class="hl-ico" style="background:#E3F0FF">🌊</div>
+          <div class="hl-info"><div class="hl-name">NDRRMC</div><div class="hl-num">1555 (toll-free)</div></div>
+          <button class="hl-call nrm"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.11-.27c1.21.49 2.53.76 3.88.76a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C9.72 21 3 14.28 3 6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.35.27 2.67.76 3.88a1 1 0 0 1-.27 1.11l-2.37 1.8z"/></svg></button>
+        </a>
+        <a class="hl-card" href="tel:1553">
+          <div class="hl-ico" style="background:#FFEBEE">⚡</div>
+          <div class="hl-info"><div class="hl-name">Meralco Emergency</div><div class="hl-num">16211 / 1553</div></div>
+          <button class="hl-call nrm"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.11-.27c1.21.49 2.53.76 3.88.76a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C9.72 21 3 14.28 3 6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.35.27 2.67.76 3.88a1 1 0 0 1-.27 1.11l-2.37 1.8z"/></svg></button>
+        </a>
+      </div>
+    </div>
+    <div class="safe-bot" style="background:var(--bg)"></div>
+  </div>
+
+
+  <!-- ════════ SCREEN 6: COMPOSE ════════ -->
+  <div id="screen-compose" class="screen">
+    <div class="screen-hdr">
+      <button class="back-btn" onclick="navBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <span class="hdr-title">I-Compose ang Ulat</span>
+    </div>
+    <div class="screen-scroll">
+      <div class="compose-form">
+        <div>
+          <label class="form-lbl" for="ctype">Uri ng Emergency</label>
+          <select class="form-ctrl" id="ctype">
+            <option value="">— Pumili ng Uri —</option>
+            <option value="sunog">🔥 Sunog / Apoy</option>
+            <option value="baha">🌊 Baha / Tubig</option>
+            <option value="aksidente">🚗 Aksidente / Banggaan</option>
+            <option value="medikal">🏥 Medikal / Sugat</option>
+            <option value="krimen">🚔 Krimen / Banta</option>
+            <option value="lindol">🌍 Lindol / Pagyanig</option>
+            <option value="sunog-kagubatan">🌿 Sunog ng Kagubatan</option>
+            <option value="iba">⚠️ Iba Pa</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-lbl" for="cdesc">Ilarawan ang Sitwasyon</label>
+          <textarea class="form-ctrl form-textarea" id="cdesc"
+            placeholder="Ilarawan ang nangyayari nang detalyado. Halimbawa: May sunog sa 2-palapag na bahay sa kanto ng Rizal at Aguinaldo. May mga taong hindi makalabas."></textarea>
+        </div>
+        <div class="loc-preview">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          <span id="compose-loc">Naglo-load ng GPS lokasyon...</span>
+        </div>
+        <div>
+          <label class="form-lbl" for="cextra">Karagdagang Detalye (opsyonal)</label>
+          <input type="text" class="form-ctrl" id="cextra"
+            placeholder="hal: Tabi ng simbahan, 3rd floor, may 5 taong nasalanta...">
+        </div>
+        <button class="btn-primary" onclick="submitCompose()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> IPADALA ANG ULAT
+        </button>
+        <div style="height: calc(var(--safe-b) + 8px)"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<!-- Toast -->
+<div id="toast"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg><span id="toast-msg"></span></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
