@@ -37,7 +37,7 @@
     <div class="drawer-head">
       <div class="drawer-appname">DRR ALERT</div>
       <div class="drawer-tagline">Barangay Emergency Response</div>
-      <div class="drawer-version">Prototype v1.0 · SJDM Bulacan</div>
+      <div class="drawer-version">Prototype v2.0 · SJDM Bulacan</div>
     </div>
     <div class="drawer-list">
       <div class="drawer-row" onclick="goHome(); closeDrawer()">
@@ -50,7 +50,7 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Mag-Compose ng Ulat
       </div>
       <div class="drawer-sep"></div>
-      <div class="drawer-row" onclick="showToast('🚧 Feature coming soon'); closeDrawer()">
+      <div class="drawer-row" onclick="initReports(); navTo('screen-reports'); closeDrawer()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Kasaysayan ng Ulat
       </div>
       <div class="drawer-row" onclick="showToast('🚧 Feature coming soon'); closeDrawer()">
@@ -85,8 +85,8 @@
 
     <div class="seal-block">
       <div class="seal-circle">
-        <img src="https://csjdm.gov.ph/wp-content/uploads/2024/05/cropped-San-Jose-del-Monte-Official-Seal.png"
-             alt="SJDM Seal"
+        <img src="images/Home_ed.png"
+             alt="App Icon"
              onerror="this.style.display='none';">
       </div>
     </div>
@@ -116,7 +116,7 @@
         <span class="qbtn-label">Hotlines</span>
         <span class="qbtn-sub">Mga contact kung offline</span>
       </div>
-      <div class="qbtn" onclick="showToast('🚧 Kasaysayan coming soon')" role="button" tabindex="0">
+      <div class="qbtn" onclick="initReports(); navTo('screen-reports')" role="button" tabindex="0">
         <span class="qbtn-icon">📋</span>
         <span class="qbtn-label">Mga Ulat</span>
         <span class="qbtn-sub">Listahan ng mga ulat</span>
@@ -208,9 +208,12 @@
 
     <div id="confirm-map"></div>
 
-    <div class="photo-thumb" id="photo-thumb">
-      <img id="photo-preview" alt="Captured">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><polyline points="21 15 16 10 5 21"/></svg> Walang larawan
+    <div class="photo-strip-wrap">
+      <div id="photo-strip" class="photo-strip"></div>
+      <div id="photo-strip-empty" class="photo-strip-empty">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><polyline points="21 15 16 10 5 21"/></svg>
+        Walang larawan
+      </div>
     </div>
 
     <div class="screen-scroll">
@@ -395,6 +398,99 @@
     </div>
   </div>
 
+  <!-- ════════ SCREEN 7: MGA ULAT ════════ -->
+  <div id="screen-reports" class="screen">
+    <div class="screen-hdr">
+      <button class="back-btn" onclick="navBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <span class="hdr-title">Mga Ulat</span>
+    </div>
+    <div class="screen-scroll">
+      <!-- empty state -->
+      <div id="reports-empty" class="reports-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <p>Wala pang naka-save na ulat</p>
+        <span>Ang mga susunod mong report ay lalabas dito</span>
+      </div>
+      <!-- list -->
+      <div id="reports-list" class="reports-list"></div>
+    </div>
+    <!-- delete all -->
+    <div class="reports-footer">
+      <button class="btn-danger-outline" onclick="confirmDeleteAll()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        IDELETE LAHAT
+      </button>
+    </div>
+    <div class="safe-bot"></div>
+  </div>
+
+
+  <!-- ════════ SCREEN 8: REPORT DETAIL ════════ -->
+  <div id="screen-report-detail" class="screen">
+    <div class="screen-hdr">
+      <button class="back-btn" onclick="navBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div>
+        <div style="font-size:0.58rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Mga Ulat</div>
+        <div class="hdr-title" id="detail-ref-sub" style="font-size:0.95rem">---</div>
+      </div>
+    </div>
+
+    <div class="screen-scroll">
+      <!-- map -->
+      <div id="detail-map" style="height:180px;flex-shrink:0;z-index:0;"></div>
+
+      <!-- description (Gemini) -->
+      <div id="detail-desc-wrap" style="display:none;margin:10px 16px 0;">
+        <div class="detail-desc-card">
+          <div class="detail-desc-lbl">DESCRIPTION <span>GEMINI AI</span></div>
+          <div class="detail-desc-body" id="detail-desc-val"></div>
+        </div>
+      </div>
+
+      <!-- photo -->
+      <div id="detail-photo-wrap" style="display:none;margin:10px 16px 0;">
+        <img id="detail-photo-img" src="" alt="Emergency photo"
+             style="width:100%;border-radius:12px;object-fit:cover;max-height:200px;border:1px solid var(--border);">
+      </div>
+
+      <!-- info cards -->
+      <div class="info-cards" style="margin-top:10px;">
+        <div class="info-card">
+          <div class="card-ico ci-red" id="detail-type-icon">🔥</div>
+          <div>
+            <div class="card-lbl">Uri ng Emergency (AI Vision)</div>
+            <div class="card-val" id="detail-type-val">---</div>
+            <div class="card-sub" id="detail-type-sub">---</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="card-ico ci-blue">📍</div>
+          <div>
+            <div class="card-lbl">Kasalukuyang Lokasyon</div>
+            <div class="card-val" id="detail-addr-val">---</div>
+            <div class="card-sub" id="detail-coords"></div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="card-ico ci-gold">🕐</div>
+          <div>
+            <div class="card-lbl">Oras ng Ulat</div>
+            <div class="card-val" id="detail-time-val">---</div>
+            <div class="card-sub" id="detail-refnum"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="confirm-actions">
+      <button class="btn-primary btn-danger" id="detail-delete-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        IDELETE ANG REPORT
+      </button>
+    </div>
+    <div class="safe-bot"></div>
+  </div>
+
 </div><!-- #app -->
 
 <!-- Toast -->
@@ -402,6 +498,8 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- gemini-integration MUST load before app.js -->
+<script src="gemini-integration.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

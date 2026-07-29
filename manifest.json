@@ -1,8 +1,8 @@
 {
-  "name": "DRR SJDM PWA",
-  "short_name": "DRR SJDM",
-  "start_url": "/DRR_SJDM_PWA/",
-  "scope": "/DRR_SJDM_PWA/",
+  "name": "Tulong! SJDM",
+  "short_name": "Tulong!",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",

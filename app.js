@@ -1,3 +1,17 @@
+// ── VERSION GATE ──────────────────
+// Change this string on every deploy (date or build number works fine)
+const APP_VERSION = 'TULONG_v1_AI3';
+
+(function enforceVersion() {
+  const stored = localStorage.getItem('tulong_version');
+  if (stored !== APP_VERSION) {
+    localStorage.clear();
+    localStorage.setItem('tulong_version', APP_VERSION);
+    console.log('[TULONG] New version detected — localStorage cleared');
+  }
+})();
+// ─────────────────────────────────────────────────────────────────────────
+
 'use strict';
 
 // ══════════════════════════════
@@ -9,12 +23,14 @@ const S = {
   coords: null,
   address: null,
   capturedPhoto: null,
+  photos: [],          // multi-photo array for confirm strip
   cameraStream: null,
   facing: 'environment',
   flashOn: false,
   aiType: null,
   aiDept: null,
   aiEmoji: '⚠️',
+  aiDescription: '',   // Taglish situational description (set by gemini-integration.js)
   refNum: null,
   cdTimer: null,
   cdVal: 5,
@@ -22,19 +38,34 @@ const S = {
   mapMarker: null,
 };
 
+const GEOCODE_MIN_INTERVAL_MS = 15000;
+const GEOCODE_MIN_MOVE = 0.0003;
+let geocodeTimer = null;
+let lastGeocodeAt = 0;
+let lastGeocodeCoords = null;
+
 // ══════════════════════════════
 // NAVIGATION
 // ══════════════════════════════
 function navTo(id) {
-  if (id === S.screen) return;
   const cur  = document.getElementById(S.screen);
   const next = document.getElementById(id);
   if (!cur || !next) return;
+
+  // If navigating to the same screen, avoid rerunning transitions but still
+  // refresh dynamic data for certain screens.
+  if (id === S.screen) {
+    if (id === 'screen-confirm') initConfirm();
+    return;
+  }
+
   S.history.push(S.screen);
   cur.classList.remove('active');
   cur.classList.add('exit');
   next.classList.add('active');
   S.screen = id;
+  // Push browser history so back gesture is catchable
+  window.history.pushState({ tulong: true }, '');
   setTimeout(() => {
     cur.classList.remove('exit');
     // ensure hidden after transition so it can't bleed through
@@ -63,6 +94,8 @@ function goHome() {
   document.getElementById('screen-home').classList.add('active');
   S.screen = 'screen-home';
   stopCamera();
+  // Replace all stacked browser history with a single clean home state
+  window.history.replaceState({ tulong: true }, '');
 }
 
 // ══════════════════════════════
@@ -85,15 +118,24 @@ function initGPS() {
   });
 }
 
+// Sa app.js, hanapin at i-replace ang onGPSSuccess:
 function onGPSSuccess(pos) {
   const { latitude: lat, longitude: lng, accuracy: acc } = pos.coords;
   S.coords = { lat, lng, acc };
   const latS = lat.toFixed(5);
   const lngS = lng.toFixed(5);
   const accR = Math.round(acc);
-  setGPSText(`${latS}°N, ${lngS}°E`, acc < 40 ? 'good' : 'warn', `±${accR}m`);
-  reverseGeocode(lat, lng);
+  
+  // Kung > 80m, gawing 'err' (pula) ang status
+  setGPSText(`${latS}°N, ${lngS}°E`, acc < 40 ? 'good' : (acc <= 80 ? 'warn' : 'err'), `±${accR}m`);
+  queueReverseGeocode(lat, lng);
+
+  // LIVE UPDATE: I-refresh ang confirm screen UI kung nakabukas ito habang inaayos ng phone ang GPS
+  if (S.screen === 'screen-confirm') {
+    initConfirm();
+  }
 }
+
 function onGPSError(e) {
   setGPSText('Hindi makuha ang GPS', 'err', 'ERROR');
 }
@@ -107,9 +149,10 @@ function setGPSText(txt, cls, acc) {
 async function reverseGeocode(lat, lng) {
   try {
     const r = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=jsonv2&zoom=18&addressdetails=1`,
       { headers: { 'Accept-Language': 'fil,en' } }
     );
+    if (!r.ok) throw new Error(`Reverse geocode failed: ${r.status}`);
     const d = await r.json();
     const a = d.address || {};
     const parts = [a.road, a.suburb || a.village || a.neighbourhood, a.city || a.municipality || a.town].filter(Boolean);
@@ -124,6 +167,24 @@ async function reverseGeocode(lat, lng) {
     S.address = S.coords ? `${S.coords.lat.toFixed(4)}°N, ${S.coords.lng.toFixed(4)}°E` : 'Hindi makuha';
     document.getElementById('compose-loc').textContent = '📍 ' + S.address;
   }
+}
+
+function queueReverseGeocode(lat, lng) {
+  const now = Date.now();
+  const movedEnough = !lastGeocodeCoords
+    || Math.abs(lastGeocodeCoords.lat - lat) >= GEOCODE_MIN_MOVE
+    || Math.abs(lastGeocodeCoords.lng - lng) >= GEOCODE_MIN_MOVE;
+
+  if (!movedEnough && now - lastGeocodeAt < GEOCODE_MIN_INTERVAL_MS) {
+    return;
+  }
+
+  clearTimeout(geocodeTimer);
+  geocodeTimer = setTimeout(() => {
+    lastGeocodeAt = Date.now();
+    lastGeocodeCoords = { lat, lng };
+    reverseGeocode(lat, lng);
+  }, 600);
 }
 
 // ══════════════════════════════
@@ -149,10 +210,15 @@ checkNet();
 // SOS HANDLER
 // ══════════════════════════════
 function handleSOS() {
+  // HAPTIC FEEDBACK (SOS Pattern: short-short-long)
+  if (navigator.vibrate) {
+    navigator.vibrate([100, 50, 100, 50, 300]);
+  }
+
   S.capturedPhoto = null;
+  S.photos = [];
   S.aiType = null;
   navTo('screen-camera');
-  // small delay so screen transition completes before getUserMedia fires
   setTimeout(() => startCamera(), 350);
 }
 
@@ -211,7 +277,8 @@ function skipCameraAndProceed() {
       document.getElementById('gal-icon').style.display = 'none';
       showToast('🖼️ Larawan pinili');
       runAI(() => {
-        setTimeout(() => { stopCamera(); navTo('screen-confirm'); }, 800);
+        stopCamera();
+        navTo('screen-confirm');
       });
     };
     reader.readAsDataURL(file);
@@ -258,6 +325,8 @@ function capturePhoto() {
   canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0);
   S.capturedPhoto = canvas.toDataURL('image/jpeg', 0.85);
+  // Add to photos array (primary photo for AI)
+  S.photos = [S.capturedPhoto];
 
   // show in gallery thumb
   const img = document.getElementById('gal-img');
@@ -270,7 +339,8 @@ function capturePhoto() {
 
   // run AI sim then go to confirm
   runAI(() => {
-    setTimeout(() => { stopCamera(); navTo('screen-confirm'); }, 600);
+    stopCamera();
+    navTo('screen-confirm');
   });
 }
 
@@ -291,11 +361,32 @@ function openGallery() {
     const reader = new FileReader();
     reader.onload = ev => {
       S.capturedPhoto = ev.target.result;
+      S.photos = [S.capturedPhoto];
       const img = document.getElementById('gal-img');
       img.src = S.capturedPhoto; img.style.display = 'block';
       document.getElementById('gal-icon').style.display = 'none';
       showToast('🖼️ Larawan pinili');
-      runAI(() => {});
+      runAI(() => {
+        stopCamera();
+        navTo('screen-confirm');
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+  inp.click();
+}
+
+// Add extra photo from confirm screen (does not re-trigger AI)
+function addExtraPhoto() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      S.photos.push(ev.target.result);
+      renderPhotoStrip();
+      showToast('📸 Larawan naidagdag');
     };
     reader.readAsDataURL(file);
   };
@@ -303,82 +394,94 @@ function openGallery() {
 }
 
 // ══════════════════════════════
-// AI CLASSIFICATION (simulated)
-// ══════════════════════════════
-const AI_TYPES = [
-  { type: 'Sunog / Apoy',         dept: 'Bureau of Fire Protection (BFP)', emoji: '🔥', conf: 94 },
-  { type: 'Baha / Tubig',         dept: 'CDRRMO / Disaster Risk Office',   emoji: '🌊', conf: 88 },
-  { type: 'Aksidente / Banggaan', dept: 'PNP + Emergency Medical Services', emoji: '🚗', conf: 91 },
-  { type: 'Medikal / Emerhensya', dept: 'Rural Health Unit (RHU) / EMS',   emoji: '🏥', conf: 86 },
-  { type: 'Krimen / Panganib',    dept: 'Philippine National Police (PNP)', emoji: '🚔', conf: 89 },
-];
-
-function runAI(cb) {
-  const badge = document.getElementById('ai-badge');
-  badge.style.display = 'none';
-  document.getElementById('ai-type').textContent = '...';
-  document.getElementById('ai-conf').textContent  = 'Nagsusuri...';
-
-  setTimeout(() => {
-    const pick = AI_TYPES[Math.floor(Math.random() * AI_TYPES.length)];
-    S.aiType  = pick.type;
-    S.aiDept  = pick.dept;
-    S.aiEmoji = pick.emoji;
-    document.getElementById('ai-type').textContent = `${pick.emoji} ${pick.type}`;
-    document.getElementById('ai-conf').textContent  = `${pick.conf}% confidence · → ${pick.dept}`;
-    badge.style.display = 'block';
-    cb && cb();
-  }, 900);
-}
-
-// ══════════════════════════════
 // CONFIRM SCREEN
 // ══════════════════════════════
-function initConfirm() {
-  // photo
-  const img = document.getElementById('photo-preview');
-  const plc = document.getElementById('photo-thumb');
-  if (S.capturedPhoto) {
-    img.src = S.capturedPhoto; img.style.display = 'block';
-    plc.querySelector('i').style.display = 'none';
-    plc.querySelector('span') && (plc.querySelector('span').style.display = 'none');
-  } else {
-    img.style.display = 'none';
+function updateConfirmTimestamp() {
+  const timeEl = document.getElementById('c-time');
+  const refEl  = document.getElementById('c-ref');
+  if (!timeEl || !refEl) return;
+
+  const now     = new Date();
+  const DAYS    = ['Linggo','Lunes','Martes','Miyerkules','Huwebes','Biyernes','Sabado'];
+  const MONS    = ['Enero','Pebrero','Marso','Abril','Mayo','Hunyo','Hulyo','Agosto','Setyembre','Oktubre','Nobyembre','Disyembre'];
+  const hours24 = now.getHours();
+  const hours12 = hours24 % 12 || 12;
+  const minutes = now.getMinutes().toString().padStart(2,'0');
+  const ampm    = hours24 < 12 ? 'AM' : 'PM';
+  const timeStr = `${hours12}:${minutes} ${ampm}`;
+  const dateStr = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONS[now.getMonth()]} ${now.getFullYear()}`;
+
+  timeEl.textContent = `${timeStr} · ${dateStr}`;
+  S.refNum = `DRR-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}-${(1000+Math.floor(Math.random()*8999))}`;
+  refEl.textContent = `REFNUM: ${S.refNum}`;
+}
+
+function renderPhotoStrip() {
+  const strip = document.getElementById('photo-strip');
+  if (!strip) return;
+  strip.innerHTML = '';
+
+  S.photos.forEach((src, i) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'photo-sq';
+    thumb.innerHTML = `<img src="${src}" alt="Photo ${i+1}">`;
+    strip.appendChild(thumb);
+  });
+
+  // Add "+" button if under 4 photos
+  if (S.photos.length < 4) {
+    const addBtn = document.createElement('div');
+    addBtn.className = 'photo-sq photo-add';
+    addBtn.onclick = addExtraPhoto;
+    addBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Dagdag</span>`;
+    strip.appendChild(addBtn);
   }
 
-  // AI result
+  // Show/hide empty state
+  const empty = document.getElementById('photo-strip-empty');
+  if (empty) empty.style.display = S.photos.length ? 'none' : 'flex';
+}
+
+function initConfirm() {
+  updateConfirmTimestamp();
+  renderPhotoStrip();
   document.getElementById('c-type').textContent = S.aiType ? `${S.aiEmoji} ${S.aiType}` : '⚠️ Di pa na-classify';
   document.getElementById('c-dept').textContent  = S.aiDept ? `Ipapadala sa: ${S.aiDept}` : 'Pumili ng uri sa compose';
   document.getElementById('type-icon').textContent = S.aiEmoji || '⚠️';
 
-  // address
+  if (typeof enhanceConfirmWithAI === 'function') enhanceConfirmWithAI();
+
   document.getElementById('c-address').textContent = S.address || 'Naglo-load...';
   if (S.coords) {
     document.getElementById('c-coords').textContent =
       `${S.coords.lat.toFixed(5)}°N, ${S.coords.lng.toFixed(5)}°E · ±${Math.round(S.coords.acc)}m`;
   }
 
-  // time & ref
-  const now   = new Date();
-  const DAYS  = ['Linggo','Lunes','Martes','Miyerkules','Huwebes','Biyernes','Sabado'];
-  const MONS  = ['Ene','Peb','Mar','Abr','Mayo','Hun','Hul','Ago','Set','Okt','Nob','Dis'];
-  const h     = now.getHours().toString().padStart(2,'0');
-  const m     = now.getMinutes().toString().padStart(2,'0');
-  document.getElementById('c-time').textContent =
-    `${h}:${m} ${now.getHours()<12?'AM':'PM'} · ${DAYS[now.getDay()]}, ${MONS[now.getMonth()]} ${now.getDate()} ${now.getFullYear()}`;
-  S.refNum = `DRR-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}-${(1000+Math.floor(Math.random()*8999))}`;
-  document.getElementById('c-ref').textContent = `REFNUM: ${S.refNum}`;
-
-  // GPS chips
+  // ── DITO NAGBAGO: GPS CHIPS & BUTTON BLOCKER ──
+  const btnSend = document.querySelector('.confirm-actions .btn-primary');
+  
   if (S.coords) {
     const acc = S.coords.acc;
     const chip = document.getElementById('chip-acc');
-    chip.className = acc < 30 ? 'vchip ok' : 'vchip warn';
-    chip.innerHTML = `<div class="vdot ${acc<30?'ok':'warn'}"></div>±${Math.round(acc)}m`;
+    chip.className = acc <= 80 ? 'vchip ok' : 'vchip bad'; // Nagiging pula kapag > 80
+    chip.innerHTML = `<div class="vdot ${acc<=80?'ok':'bad'}"></div>±${Math.round(acc)}m`;
+
+    if (acc > 80) {
+      btnSend.style.opacity = '0.5';
+      btnSend.style.pointerEvents = 'none'; // I-disable ang pindutan
+      btnSend.innerHTML = `⚠️ MAHINA ANG GPS (±${Math.round(acc)}m)`;
+    } else {
+      btnSend.style.opacity = '1';
+      btnSend.style.pointerEvents = 'auto'; // I-enable ang pindutan
+      btnSend.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> IPADALA ANG ULAT`;
+    }
+  } else {
+    btnSend.style.opacity = '0.5';
+    btnSend.style.pointerEvents = 'none';
+    btnSend.innerHTML = `📍 NAGHAHANAP NG GPS...`;
   }
 
-  // map
-  setTimeout(buildMap, 120);
+  setTimeout(buildMap, 180);
 }
 
 function buildMap() {
@@ -434,6 +537,168 @@ function initDone() {
     `Naipadala na ang iyong ulat sa ${S.aiDept || 'kaukulang departamento'}. Mangyaring maghintay at manatiling ligtas.`;
   document.getElementById('done-dispatch').innerHTML =
     `📢 Naipadala sa: ${S.aiDept || 'CDRRMO'}<br>⏱ Response time: ~5–10 minuto`;
+  saveReport();
+}
+
+// ══════════════════════════════
+// REPORT HISTORY (localStorage)
+// ══════════════════════════════
+const REPORTS_KEY = 'tulong_reports';
+
+function saveReport() {
+  const reports = loadReports();
+  const report = {
+    refNum:      S.refNum,
+    aiType:      S.aiType   || 'Di na-classify',
+    aiDept:      S.aiDept   || 'CDRRMO',
+    aiEmoji:     S.aiEmoji  || '⚠️',
+    aiDesc:      S.aiDescription || '',
+    address:     S.address  || 'Hindi nakuha ang lokasyon',
+    coords:      S.coords   ? { lat: S.coords.lat, lng: S.coords.lng } : null,
+    photo:       S.photos && S.photos.length ? S.photos[0] : null, // save first photo thumbnail
+    timestamp:   Date.now(),
+  };
+  // Avoid duplicate if somehow called twice
+  if (!reports.find(r => r.refNum === report.refNum)) {
+    reports.unshift(report); // newest first
+    // cap at 50 reports
+    if (reports.length > 50) reports.length = 50;
+    localStorage.setItem(REPORTS_KEY, JSON.stringify(reports));
+  }
+}
+
+function loadReports() {
+  try {
+    return JSON.parse(localStorage.getItem(REPORTS_KEY)) || [];
+  } catch { return []; }
+}
+
+function deleteReport(refNum) {
+  const reports = loadReports().filter(r => r.refNum !== refNum);
+  localStorage.setItem(REPORTS_KEY, JSON.stringify(reports));
+}
+
+function deleteAllReports() {
+  localStorage.removeItem(REPORTS_KEY);
+}
+
+// ── Screen: Mga Ulat (list) ──
+function initReports() {
+  const list    = document.getElementById('reports-list');
+  const empty   = document.getElementById('reports-empty');
+  const reports = loadReports();
+
+  list.innerHTML = '';
+  if (!reports.length) {
+    empty.style.display = 'flex';
+    list.style.display  = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  list.style.display  = 'flex';
+
+  reports.forEach(r => {
+    const date = new Date(r.timestamp);
+    const dateStr = date.toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const item = document.createElement('div');
+    item.className = 'rpt-item';
+    item.innerHTML = `
+      <div class="rpt-thumb">${r.photo ? `<img src="${r.photo}" alt="">` : `<span>${r.aiEmoji}</span>`}</div>
+      <div class="rpt-info">
+        <div class="rpt-ref">${r.refNum}</div>
+        <div class="rpt-addr">${r.address}</div>
+        <div class="rpt-date">Reported on ${dateStr}</div>
+      </div>
+      <button class="rpt-menu-btn" onclick="openReportDetail('${r.refNum}')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>`;
+    item.addEventListener('click', (e) => {
+      if (!e.target.closest('.rpt-menu-btn')) openReportDetail(r.refNum);
+    });
+    list.appendChild(item);
+  });
+}
+
+function confirmDeleteAll() {
+  if (!loadReports().length) { showToast('Walang ulat na ide-delete'); return; }
+  if (!confirm('I-delete ang lahat ng saved reports?')) return;
+  deleteAllReports();
+  initReports();
+  showToast('🗑️ Lahat ng ulat na-delete');
+}
+
+// ── Screen: Report Detail ──
+function openReportDetail(refNum) {
+  const report = loadReports().find(r => r.refNum === refNum);
+  if (!report) { showToast('Report not found'); return; }
+
+  // Fill detail screen
+  document.getElementById('detail-ref-sub').textContent  = refNum;
+  document.getElementById('detail-type-icon').textContent = report.aiEmoji;
+  document.getElementById('detail-type-val').textContent  = report.aiType;
+  document.getElementById('detail-type-sub').textContent  = `Ipapadala sa: ${report.aiDept}`;
+  document.getElementById('detail-addr-val').textContent  = report.address;
+  if (report.coords) {
+    document.getElementById('detail-coords').textContent = `${report.coords.lat.toFixed(5)}°N, ${report.coords.lng.toFixed(5)}°E`;
+  } else {
+    document.getElementById('detail-coords').textContent = '';
+  }
+  const date = new Date(report.timestamp);
+  const dateStr = date.toLocaleString('fil-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  document.getElementById('detail-time-val').textContent = dateStr;
+  document.getElementById('detail-refnum').textContent   = `REFNUM: ${report.refNum}`;
+
+  // description
+  const descWrap = document.getElementById('detail-desc-wrap');
+  const descVal  = document.getElementById('detail-desc-val');
+  if (report.aiDesc) {
+    descVal.textContent = report.aiDesc;
+    descWrap.style.display = 'block';
+  } else {
+    descWrap.style.display = 'none';
+  }
+
+  // photo
+  const photoWrap = document.getElementById('detail-photo-wrap');
+  const photoImg  = document.getElementById('detail-photo-img');
+  if (report.photo) {
+    photoImg.src = report.photo;
+    photoWrap.style.display = 'block';
+  } else {
+    photoWrap.style.display = 'none';
+  }
+
+  // map
+  initDetailMap(report);
+
+  // delete button
+  document.getElementById('detail-delete-btn').onclick = () => {
+    if (!confirm(`I-delete ang report ${refNum}?`)) return;
+    deleteReport(refNum);
+    navBack();
+    initReports();
+    showToast('🗑️ Report na-delete');
+  };
+
+  navTo('screen-report-detail');
+}
+
+let detailMap = null;
+function initDetailMap(report) {
+  const mapEl = document.getElementById('detail-map');
+  if (!report.coords) { mapEl.style.display = 'none'; return; }
+  mapEl.style.display = 'block';
+
+  if (detailMap) { detailMap.remove(); detailMap = null; }
+
+  setTimeout(() => {
+    detailMap = L.map('detail-map', { zoomControl: false, attributionControl: false })
+      .setView([report.coords.lat, report.coords.lng], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(detailMap);
+    const pin = L.divIcon({ className: '', html: '<div class="map-pin-div"></div>', iconSize: [28,28], iconAnchor: [14,28] });
+    L.marker([report.coords.lat, report.coords.lng], { icon: pin }).addTo(detailMap);
+    detailMap.invalidateSize();
+  }, 120);
 }
 
 function shareReport() {
@@ -516,7 +781,7 @@ function showToast(msg) {
 // Service worker for offline caching
 if ('serviceWorker' in navigator) {
   const sw = `
-    const CACHE='drr-v2';
+    const CACHE='drr-v8';
     self.addEventListener('install', e => {
       self.skipWaiting();
       e.waitUntil(
@@ -549,10 +814,26 @@ if ('serviceWorker' in navigator) {
 // INIT
 // ══════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  // Push initial browser history entry so the first back is catchable
+  window.history.replaceState({ tulong: true }, '');
   initGPS();
   // Prevent pull-to-refresh on iOS
   document.addEventListener('touchmove', e => {
     if (e.target.closest('.screen-scroll')) return;
     e.preventDefault();
   }, { passive: false });
+});
+
+// ══════════════════════════════
+// BACK GESTURE / HARDWARE BACK BUTTON INTERCEPTION
+// ══════════════════════════════
+window.addEventListener('popstate', () => {
+  // Always re-push so there's always a state to catch next time
+  window.history.pushState({ tulong: true }, '');
+  if (S.history.length) {
+    navBack();
+  } else {
+    // Already at home — warn instead of letting the app close
+    showToast('📍 Nasa home ka na — i-swipe up para lumabas sa app');
+  }
 });
