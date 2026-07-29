@@ -5,21 +5,21 @@
 // ── GEMINI CONFIG ──────────────────────────────────────────────────────────
 const GEMINI_API_KEY = 'AIzaSyCeEQ0UiNIv7mebf201sj7o0IGKaq89vno';
 const GEMINI_MODEL   = 'gemini-flash-lite-latest';
-const GEMINI_URL     = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GEMINI_URL     = `GEMINI_URL_HERE`;
 
 // ── ROBOFLOW CLASSIFICATION CONFIG ─────────────────────────────────────────
-const ROBOFLOW_API_KEY = 'GAhmuwX9Goxrv4bgwjsR';
-const ROBOFLOW_MODEL   = 'tulongaivision/2';
+const ROBOFLOW_API_KEY = 'APIKEY';
+const ROBOFLOW_MODEL   = 'ROBOFLOW_MODEL';
 
 // ── FIREBASE CONFIG (REALTIME DATABASE VERSION) ────────────────────────────
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyD-iNn6FchuM3d1Rg-JhtTTGjXrCl1-tDw",
-  authDomain: "csjdm-tulong.firebaseapp.com",
+  apiKey: "FIREBASE_API_KEY",
+  authDomain: "AUTH_DOMAIN",
   projectId: "csjdm-tulong",
-  databaseURL: "https://csjdm-tulong-default-rtdb.asia-southeast1.firebasedatabase.app", 
-  storageBucket: "csjdm-tulong.firebasestorage.app",
-  messagingSenderId: "545283314775",
-  appId: "1:545283314775:web:359887a1cf18bafd773f12"
+  databaseURL: "FIREBASE_URL", 
+  storageBucket: "STORAGE_URL",
+  messagingSenderId: "ID",
+  appId: "APP_ID"
 };
 
 // ——— EMERGENCY TYPE CONFIG (OPTIMIZED FOR TULONG! APP) ———
@@ -37,7 +37,7 @@ const EMERGENCY_CONFIG = {
 // FIREBASE REALTIME DATABASE UPLOAD (With Strict Anonymous Auth)
 // ══════════════════════════════════════════════════════════════════════════
 async function getAnonymousAuthToken() {
-  const authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_CONFIG.apiKey}`;
+  const authUrl = `API_KEY`;
   
   const response = await fetch(authUrl, {
     method: 'POST',
@@ -72,7 +72,7 @@ async function uploadImageToStorage(dataUrl, path) {
 
   const blob = dataUrlToBlob(dataUrl);
   const encodedPath = encodeURIComponent(path); 
-  const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?uploadType=media&name=${encodedPath}`;
+  const uploadUrl = `UPLOAD_URL`;
 
   const res = await fetch(uploadUrl, {
     method: 'POST',
@@ -84,7 +84,7 @@ async function uploadImageToStorage(dataUrl, path) {
 
   const data = await res.json();
   const token = data.downloadTokens; // present kapag naka-enable ang firebaseStorageDownloadTokens
-  const base = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}`;
+  const base = `STORAGE_BASE`;
   return token ? `${base}?alt=media&token=${token}` : `${base}?alt=media`;
 }
 
