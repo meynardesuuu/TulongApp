@@ -1,0 +1,125 @@
+[debug] [2026-09-22T16:53:19.156Z] ----------------------------------------------------------------------
+[debug] [2026-09-22T16:53:19.160Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Mey\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-09-22T16:53:19.160Z] CLI Version:   15.25.1
+[debug] [2026-09-22T16:53:19.160Z] Platform:      win32
+[debug] [2026-09-22T16:53:19.160Z] Node Version:  v24.14.0
+[debug] [2026-09-22T16:53:19.161Z] Detected Agent: antigravity
+[debug] [2026-09-22T16:53:19.161Z] Time:          Wed Sep 23 2026 00:53:19 GMT+0800 (Philippine Standard Time)
+[debug] [2026-09-22T16:53:19.161Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-09-22T16:53:20.679Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-09-22T16:53:20.679Z] > authorizing via signed-in user (meynardbrianjunio@gmail.com)
+[debug] [2026-09-22T16:53:20.679Z] [iam] checking project tulongrevamp for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-09-22T16:53:20.697Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:20.697Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:20.699Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/tulongrevamp:testIamPermissions [none]
+[debug] [2026-09-22T16:53:20.699Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/tulongrevamp:testIamPermissions  x-goog-user-project=tulongrevamp
+[debug] [2026-09-22T16:53:20.700Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/tulongrevamp:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-09-22T16:53:21.670Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/tulongrevamp:testIamPermissions 200
+[debug] [2026-09-22T16:53:21.670Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/tulongrevamp:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-09-22T16:53:21.671Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:21.671Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:21.671Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/tulongrevamp [none]
+[debug] [2026-09-22T16:53:22.060Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/tulongrevamp 200
+[debug] [2026-09-22T16:53:22.060Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/tulongrevamp {"projectId":"tulongrevamp","projectNumber":"118476576673","displayName":"tulongrevampmey","name":"projects/tulongrevamp","resources":{"hostingSite":"tulongrevamp"},"state":"ACTIVE","labels":{"firebase":"enabled"},"etag":"1_eea95e26-df2c-4d0b-b1c6-e66c19ad2f04"}
+[info] 
+[info] === Deploying to 'tulongrevamp'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2026-09-22T16:53:22.063Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:22.063Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:22.063Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/tulongrevamp/sites/tulongrevamp [none]
+[debug] [2026-09-22T16:53:22.857Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/tulongrevamp/sites/tulongrevamp 200
+[debug] [2026-09-22T16:53:22.857Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/tulongrevamp/sites/tulongrevamp {"name":"projects/tulongrevamp/sites/tulongrevamp","defaultUrl":"https://tulongrevamp.web.app","type":"DEFAULT_SITE"}
+[debug] [2026-09-22T16:53:22.863Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:22.863Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:22.865Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/versions [none]
+[debug] [2026-09-22T16:53:22.865Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2026-09-22T16:53:23.749Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/versions 200
+[debug] [2026-09-22T16:53:23.749Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/versions {"name":"projects/118476576673/sites/tulongrevamp/versions/8805416aa5ef50ec","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[tulongrevamp]: beginning deploy... 
+[info] i  hosting[tulongrevamp]: found 13 files in . 
+[debug] [2026-09-22T16:53:23.774Z] [hosting] uploading with 200 concurrency
+[debug] [2026-09-22T16:53:23.789Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:23.789Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:23.791Z] [hosting] hash cache [] stored for 13 files
+[debug] [2026-09-22T16:53:23.791Z] [hosting][hash queue][FINAL] {"max":8,"min":0,"avg":2.8461538461538463,"active":0,"complete":13,"success":13,"errored":0,"retried":0,"total":13,"elapsed":14}
+[debug] [2026-09-22T16:53:23.792Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/118476576673/sites/tulongrevamp/versions/8805416aa5ef50ec:populateFiles [none]
+[debug] [2026-09-22T16:53:23.792Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/118476576673/sites/tulongrevamp/versions/8805416aa5ef50ec:populateFiles {"files":{"/manifest.json":"9984299e9c3cc0648b4df80d2756cd5483203e1d2f1e670f3c733ffacd613a17","/404.html":"762bf484ba67404bd1a3b181546ea28d60dfddf18e9dd4795d8d25bcf3c1a890","/public/index.html":"dddd5894b9b74433e97cd267c9bd120afa4301af4de810eb5496c2eb3dc134dd","/public/404.html":"762bf484ba67404bd1a3b181546ea28d60dfddf18e9dd4795d8d25bcf3c1a890","/images/icon_512.png":"172b373b38690f6c60a6479edfdeb90a5e4d702dc0308dbf977e3b592996578e","/images/icon_192.png":"4ba9475393028d0171d913f0e46ddf8cb866949d1dcb68ada81a1b8ed48e9a13","/images/Home_ed.png":"c1d4fe7cb5b4c3f24b2bc46988354b9364bf74981d6661159586f7f552aa1ec0","/images/badge_72.png":"945141af848fc190930455bd7a56b710c7f1be30794d767f00dec96a60186885","/sw.js":"db569ed29512527a36be7194c66eed9255c6ced4802ed3bf4419b31c5016ffd4","/gemini-integration.js":"a64f7b9f00d30ebe51a3d8513dfbb447f69fe0324bafb871032313a6335505b8","/index.html":"6aba62f3ca96404354d1d6848cc7ddf60acc733ec19c2e1b0d6744a0f9f77cd4","/style.css":"92a7ff6a78f694068bf637f16e94aa19decd576603e17eac686b6d7b27ba14fe","/app.js":"fb455b94795cf56ea5a3b16d793591bf084e59a795c2ea76972392118e5c3dae"}}
+[debug] [2026-09-22T16:53:24.517Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/118476576673/sites/tulongrevamp/versions/8805416aa5ef50ec:populateFiles 200
+[debug] [2026-09-22T16:53:24.518Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/118476576673/sites/tulongrevamp/versions/8805416aa5ef50ec:populateFiles {"uploadRequiredHashes":["92a7ff6a78f694068bf637f16e94aa19decd576603e17eac686b6d7b27ba14fe","fb455b94795cf56ea5a3b16d793591bf084e59a795c2ea76972392118e5c3dae","db569ed29512527a36be7194c66eed9255c6ced4802ed3bf4419b31c5016ffd4","6aba62f3ca96404354d1d6848cc7ddf60acc733ec19c2e1b0d6744a0f9f77cd4","a64f7b9f00d30ebe51a3d8513dfbb447f69fe0324bafb871032313a6335505b8"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files"}
+[debug] [2026-09-22T16:53:24.518Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:24.518Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:24.519Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:24.519Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:24.519Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:24.519Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:24.519Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:24.519Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:24.520Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:24.520Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:24.520Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/92a7ff6a78f694068bf637f16e94aa19decd576603e17eac686b6d7b27ba14fe [none]
+[debug] [2026-09-22T16:53:24.520Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/92a7ff6a78f694068bf637f16e94aa19decd576603e17eac686b6d7b27ba14fe [stream]
+[debug] [2026-09-22T16:53:24.521Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/fb455b94795cf56ea5a3b16d793591bf084e59a795c2ea76972392118e5c3dae [none]
+[debug] [2026-09-22T16:53:24.521Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/fb455b94795cf56ea5a3b16d793591bf084e59a795c2ea76972392118e5c3dae [stream]
+[debug] [2026-09-22T16:53:24.522Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/db569ed29512527a36be7194c66eed9255c6ced4802ed3bf4419b31c5016ffd4 [none]
+[debug] [2026-09-22T16:53:24.522Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/db569ed29512527a36be7194c66eed9255c6ced4802ed3bf4419b31c5016ffd4 [stream]
+[debug] [2026-09-22T16:53:24.522Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/6aba62f3ca96404354d1d6848cc7ddf60acc733ec19c2e1b0d6744a0f9f77cd4 [none]
+[debug] [2026-09-22T16:53:24.522Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/6aba62f3ca96404354d1d6848cc7ddf60acc733ec19c2e1b0d6744a0f9f77cd4 [stream]
+[debug] [2026-09-22T16:53:24.523Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/a64f7b9f00d30ebe51a3d8513dfbb447f69fe0324bafb871032313a6335505b8 [none]
+[debug] [2026-09-22T16:53:24.523Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/a64f7b9f00d30ebe51a3d8513dfbb447f69fe0324bafb871032313a6335505b8 [stream]
+[debug] [2026-09-22T16:53:24.528Z] [hosting][populate queue][FINAL] {"max":732,"min":732,"avg":732,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":740}
+[debug] [2026-09-22T16:53:24.528Z] [hosting] uploads queued: 5
+[info] i  hosting: uploading new files [0/5] (0%) 
+[debug] [2026-09-22T16:53:26.228Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/6aba62f3ca96404354d1d6848cc7ddf60acc733ec19c2e1b0d6744a0f9f77cd4 200
+[debug] [2026-09-22T16:53:26.229Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/6aba62f3ca96404354d1d6848cc7ddf60acc733ec19c2e1b0d6744a0f9f77cd4 [stream]
+[debug] [2026-09-22T16:53:26.230Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/a64f7b9f00d30ebe51a3d8513dfbb447f69fe0324bafb871032313a6335505b8 200
+[debug] [2026-09-22T16:53:26.230Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/a64f7b9f00d30ebe51a3d8513dfbb447f69fe0324bafb871032313a6335505b8 [stream]
+[debug] [2026-09-22T16:53:26.230Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/fb455b94795cf56ea5a3b16d793591bf084e59a795c2ea76972392118e5c3dae 200
+[debug] [2026-09-22T16:53:26.230Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/fb455b94795cf56ea5a3b16d793591bf084e59a795c2ea76972392118e5c3dae [stream]
+[debug] [2026-09-22T16:53:26.325Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/92a7ff6a78f694068bf637f16e94aa19decd576603e17eac686b6d7b27ba14fe 200
+[debug] [2026-09-22T16:53:26.326Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/92a7ff6a78f694068bf637f16e94aa19decd576603e17eac686b6d7b27ba14fe [stream]
+[debug] [2026-09-22T16:53:26.327Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/db569ed29512527a36be7194c66eed9255c6ced4802ed3bf4419b31c5016ffd4 200
+[debug] [2026-09-22T16:53:26.327Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/tulongrevamp/versions/8805416aa5ef50ec/files/db569ed29512527a36be7194c66eed9255c6ced4802ed3bf4419b31c5016ffd4 [stream]
+[debug] [2026-09-22T16:53:26.327Z] [hosting][upload queue][FINAL] {"max":1808,"min":1710,"avg":1749.8,"active":0,"complete":5,"success":5,"errored":0,"retried":0,"total":5,"elapsed":1809}
+[info] i  hosting: upload complete 
+[info] +  hosting[tulongrevamp]: file upload complete 
+[debug] [2026-09-22T16:53:26.328Z] [hosting] deploy completed after 2576ms
+[debug] [2026-09-22T16:53:26.328Z] [
+  {
+    "config": {
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "functions/**",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "site": "tulongrevamp"
+    },
+    "version": "projects/118476576673/sites/tulongrevamp/versions/8805416aa5ef50ec"
+  }
+]
+[info] i  hosting[tulongrevamp]: finalizing version... 
+[debug] [2026-09-22T16:53:26.330Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:26.330Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:26.330Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/versions/8805416aa5ef50ec updateMask=status%2Cconfig
+[debug] [2026-09-22T16:53:26.331Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/versions/8805416aa5ef50ec {"status":"FINALIZED","config":{}}
+[debug] [2026-09-22T16:53:27.067Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/versions/8805416aa5ef50ec 200
+[debug] [2026-09-22T16:53:27.067Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/versions/8805416aa5ef50ec {"name":"projects/118476576673/sites/tulongrevamp/versions/8805416aa5ef50ec","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-09-22T16:53:21.348886Z","createUser":{"email":"meynardbrianjunio@gmail.com"},"finalizeTime":"2026-09-22T16:53:25.134179Z","finalizeUser":{"email":"meynardbrianjunio@gmail.com"}}
+[debug] [2026-09-22T16:53:27.067Z] [hosting] finalized version for tulongrevamp:[object Object]
+[info] +  hosting[tulongrevamp]: version finalized 
+[info] i  hosting[tulongrevamp]: releasing new version... 
+[debug] [2026-09-22T16:53:27.068Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:27.068Z] Checked if tokens are valid: true, expires at: 1790099438517
+[debug] [2026-09-22T16:53:27.068Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/channels/live/releases versionName=projects%2F118476576673%2Fsites%2Ftulongrevamp%2Fversions%2F8805416aa5ef50ec
+[debug] [2026-09-22T16:53:27.068Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/channels/live/releases {}
+[debug] [2026-09-22T16:53:27.828Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/channels/live/releases 200
+[debug] [2026-09-22T16:53:27.829Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/tulongrevamp/channels/live/releases {"name":"projects/118476576673/sites/tulongrevamp/channels/live/releases/1790096005197000","version":{"name":"projects/118476576673/sites/tulongrevamp/versions/8805416aa5ef50ec","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-09-22T16:53:21.348886Z","createUser":{"email":"meynardbrianjunio@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJvPcU8SkD4orkHr6or9uEKnz2pySEikYVCkeQgTakWcdpZpdeLgg"},"finalizeTime":"2026-09-22T16:53:25.134179Z","finalizeUser":{"email":"meynardbrianjunio@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJvPcU8SkD4orkHr6or9uEKnz2pySEikYVCkeQgTakWcdpZpdeLgg"}},"type":"DEPLOY","releaseTime":"2026-09-22T16:53:25.197Z","releaseUser":{"email":"meynardbrianjunio@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJvPcU8SkD4orkHr6or9uEKnz2pySEikYVCkeQgTakWcdpZpdeLgg"}}
+[debug] [2026-09-22T16:53:27.829Z] [hosting] release: {"name":"projects/118476576673/sites/tulongrevamp/channels/live/releases/1790096005197000","version":{"name":"projects/118476576673/sites/tulongrevamp/versions/8805416aa5ef50ec","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-09-22T16:53:21.348886Z","createUser":{"email":"meynardbrianjunio@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJvPcU8SkD4orkHr6or9uEKnz2pySEikYVCkeQgTakWcdpZpdeLgg"},"finalizeTime":"2026-09-22T16:53:25.134179Z","finalizeUser":{"email":"meynardbrianjunio@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJvPcU8SkD4orkHr6or9uEKnz2pySEikYVCkeQgTakWcdpZpdeLgg"}},"type":"DEPLOY","releaseTime":"2026-09-22T16:53:25.197Z","releaseUser":{"email":"meynardbrianjunio@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocJvPcU8SkD4orkHr6or9uEKnz2pySEikYVCkeQgTakWcdpZpdeLgg"}}
+[info] +  hosting[tulongrevamp]: release complete 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/tulongrevamp/overview
+[info] Hosting URL: https://tulongrevamp.web.app
